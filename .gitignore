@@ -12,5 +12,7 @@
 # Deployment files
 rsconnect/
 
+
+.DS_Store 
 .env
 

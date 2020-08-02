@@ -5,6 +5,26 @@ library(dsmodules)
 library(paletero)
 library(homodatum)
 library(ggmagic)
+library(pins)
+library(dspins)
+
+if(Sys.info()[['sysname']] == 'Linux'){
+  message("create .fonts")
+  dir.create('~/.fonts')
+  message("copy to .fonts")
+  file.copy("fonts/IBMPlexSans-Regular.ttf", "~/.fonts")
+  message("fc-cache -f ~/.fonts")
+  system('fc-cache -f -v ~/.fonts')
+  message("\n\nls ~/.fonts\n\n")
+  system('ls ~/.fonts')
+  message("\n\nfc-list\n\n")
+  system('fc-list')
+  message("\n\nfc-match IBM Plex Sans\n\n")
+  system('fc-match IBM Plex Sans')
+}
+
+user_id <- "000000000000000000000000"
+user_name <- "brandon"
 
 ui <-   panelsPage(
   panel(
@@ -36,7 +56,10 @@ ui <-   panelsPage(
     )
   ),
   panel(
-    title = "Upload Data", 
+    title = "Preview Palette", 
+    # title_plugin = uiOutput("download"),
+    color = "chardonnay",
+    can_collapse = FALSE,
     width = NULL,
     body = list(
       h4("Palette:"),
@@ -46,7 +69,8 @@ ui <-   panelsPage(
       h4("How it looks in a data visualization"),
       plotOutput("plot")
     )
-  )
+  ),
+  showDebug(hosts = c("127.0.0.1","randommonkey.shinyapps.io"))
 )
 
 
@@ -111,10 +135,45 @@ server <- function(input, output, session) {
                         addNA = FALSE,loremNames = TRUE,
                         nlevels = min(length(palette$colors), length(input$palette)))
     gg_bar_CatNum(data, 
+                  title = "This is a chart",
+                  #text_family = "Ubuntu",
                   color_by = names(data)[1],
                   palette_colors = input$palette, 
                   background_color = input$background)
   })
+  
+  
+  # output$download <- renderUI({
+  #   downloadTableUI("download_plot", dropdownLabel = "Save/Download", 
+  #                   formats = c("link","csv", "xlsx"), 
+  #                   display = "dropdown",
+  #                   getLinkLabel = "Save to library",
+  #                   modalTitle = "Save to library"
+  #                   )
+  # })
+  # 
+  # saveUrl <- function(table, user_id, user_name) {
+  #   
+  #   f <- fringe(table, name = "palette-from-image")
+  #   message("\n\nSAVING PIN\n\n")
+  #   pin_url <- pin(f, user_id = user_id)
+  #   message("\n\nSAVED PIN\n\n", pin_url)
+  #   
+  #   url <-  paste0(user_name, ".datasketch.co/", f$name)
+  #   if (is.null(pin_url)) url <- "pinnotfound"
+  #   url
+  # }
+  # 
+  # palette_table <- reactive({
+  #   cars
+  # })
+  # 
+  # callModule(downloadTable, "download_plot", table = palette_table(), 
+  #            formats = c("link","csv", "xlsx"), 
+  #            modalFunction = paste,
+  #            modalFunctionArgs = saveUrl(palette_table(), user_id, user_name))
+  # 
+  # 
   
 }
 

@@ -13,8 +13,23 @@ palette <- list(colors = colors, background = background)
 
 data <- sample_data('Cat-Num', n = 20, nlevels = length(palette$colors))
 gg_bar_CatNum(data, 
+              title = "Title with font",
               color_by = names(data)[1],
               palette_colors = palette$colors, 
-              background_color = palette$background)
+              background_color = palette$background,
+              text_family = "IBMPlexSans"
+              )
+
+
+# Download fonts
+
+font_url <- "https://github.com/google/fonts/raw/master/ofl/ibmplexsans/IBMPlexSans-Regular.ttf"
+download.file(font_url, destfile = "fonts/IBMPlexSans-Regular.ttf")
+
+
+
+
+font_url <- "https://github.com/google/fonts/raw/master/ofl/ibmplexsans/IBMPlexSans-Regular.ttf"
+download.file(font_url, destfile = "fonts/IBMPlexSans-Regular.ttf")
 
 
