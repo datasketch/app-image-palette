@@ -57,7 +57,9 @@ ui <-   panelsPage(
   ),
   panel(
     title = "Preview Palette", 
-    # title_plugin = uiOutput("download"),
+    title_plugin = downloadTableUI("download_plot", dropdownLabel = "Download", text = "Download", formats = c("link", "csv", "xlsx"),
+                                   display = "dropdown", dropdownWidth = 170, getLinkLabel = "Get link", modalTitle = "Get link",
+                                   modalBody = NULL),
     color = "chardonnay",
     can_collapse = FALSE,
     width = NULL,
@@ -175,6 +177,11 @@ server <- function(input, output, session) {
   # 
   # 
   
+  callModule(downloadTable, "download_plot", table = reactive(palette_table()),
+             name = "table", formats = c("link", "csv", "xlsx"),
+             modalFunction = pin_user_url, 
+             title = "table", element = reactive(palette_table()),
+             user_id = user_id, user_name = user_name)
 }
 
 shinyApp(ui, server)
