@@ -23,7 +23,6 @@ if(Sys.info()[['sysname']] == 'Linux'){
   system('fc-match IBM Plex Sans')
 }
 
-
 ui <-   panelsPage(
   panel(
     title = "Image Upload", 
@@ -154,14 +153,17 @@ server <- function(input, output, session) {
   # })
   # 
   saveFringeUrl <- function(element, user_id, user_name, fringe_name, ...) {
+    if (is.reactive(fringe_name)) fringe_name <- fringe_name()
+    if (is.reactive(element)) element <- element()
     args <- list(...)
     args$name <- fringe_name
     args$slug <- fringe_name
-    if (is.reactive(element)) element <- element()
     if (!is_fringe(element)) {
       element <- fringe(element)
     }
     f <- modifyList(element, args)
+    assign("f0", f, envir = globalenv())
+    dspins_user_board_connect(user_id)
     message("\n\nSAVING PIN\n\n")
     pin_url <- pin(f, user_id = user_id)
     message("\n\nSAVED PIN\n\n", pin_url)
@@ -201,10 +203,10 @@ server <- function(input, output, session) {
   callModule(downloadTable, "download_plot", table = reactive(palette_table()$data), name = "table",
              formats = c("link", "csv", "xlsx"), modalFunction = saveFringeUrl, 
              element = reactive(palette_table()), user_id = user_id, user_name = user_name, 
-             fringe_name = reactive(input$`download_plot-link-name`),
+             fringe_name = reactive(input$`download_plot-link-name`))
              # slug = input$`download_plot-slug`,
-             description = input$`download_plot-description`, license = input$`download_plot-license`,
-             tags = input$`download_plot-tags`, category = input$`download_plot-category`)
+             # description = input$`download_plot-description`, license = input$`download_plot-license`,
+             # tags = input$`download_plot-tags`, category = input$`download_plot-category`)
   
   
 }
