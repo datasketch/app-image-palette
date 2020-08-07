@@ -23,8 +23,6 @@ if(Sys.info()[['sysname']] == 'Linux'){
   system('fc-match IBM Plex Sans')
 }
 
-user_id <- "000000000000000000000000"
-user_name <- "brandon"
 
 ui <-   panelsPage(
   panel(
