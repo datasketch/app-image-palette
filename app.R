@@ -104,14 +104,15 @@ server <- function(input, output, session) {
   })
   
   img_colors <- reactive({
+    req(img_path())
     # if(is.null(img_path())) return()
     input$n_colors
     pal_colors <- paletero::img_palette(img_path(), 
-                                    n = input$n_colors,
-                                    type = "cat", #input$palette_type,
-                                    n_quant = input$n_quant,
-                                    fuzz = input$fuzz,
-                                    include_bg = FALSE)
+                                        n = input$n_colors,
+                                        type = "cat", #input$palette_type,
+                                        n_quant = input$n_quant,
+                                        fuzz = input$fuzz,
+                                        include_bg = FALSE)
     background <- paletero::img_background_color(img_path())
     list(colors = pal_colors, background = background)
   })
@@ -154,21 +155,32 @@ server <- function(input, output, session) {
   #                   )
   # })
   # 
-  # saveUrl <- function(table, user_id, user_name) {
-  #   
-  #   f <- fringe(table, name = "palette-from-image")
-  #   message("\n\nSAVING PIN\n\n")
-  #   pin_url <- pin(f, user_id = user_id)
-  #   message("\n\nSAVED PIN\n\n", pin_url)
-  #   
-  #   url <-  paste0(user_name, ".datasketch.co/", f$name)
-  #   if (is.null(pin_url)) url <- "pinnotfound"
-  #   url
-  # }
-  # 
-  # palette_table <- reactive({
-  #   cars
-  # })
+  saveFringeUrl <- function(element, user_id, user_name, fringe_name, ...) {
+    args <- list(...)
+    args$name <- fringe_name
+    args$slug <- fringe_name
+    if (is.reactive(element)) element <- element()
+    if (!is_fringe(element)) {
+      element <- fringe(element)
+    }
+    f <- modifyList(element, args)
+    message("\n\nSAVING PIN\n\n")
+    pin_url <- pin(f, user_id = user_id)
+    message("\n\nSAVED PIN\n\n", pin_url)
+    
+    url <-  paste0(user_name, ".datasketch.co/", f$name)
+    if (is.null(pin_url)) url <- "pinnotfound"
+    url
+  }
+  
+  palette_table <- reactive({
+    # cars
+    req(img_colors())
+    palette <- img_colors()
+    table <- data.frame(palette = c(palette$colors, palette$background),
+                        stringsAsFactors = FALSE)
+    fringe(table)
+  })
   # 
   # callModule(downloadTable, "download_plot", table = palette_table(), 
   #            formats = c("link","csv", "xlsx"), 
@@ -177,11 +189,26 @@ server <- function(input, output, session) {
   # 
   # 
   
-  callModule(downloadTable, "download_plot", table = reactive(palette_table()),
-             name = "table", formats = c("link", "csv", "xlsx"),
-             modalFunction = pin_user_url, 
-             title = "table", element = reactive(palette_table()),
-             user_id = user_id, user_name = user_name)
+  # observe({
+  #   req(palette_table())
+  #   # print("W")
+  #   # print(input$`download_plot-link-name`)
+  #   # print(input$`download_plot-slug`)
+  #   # print(input$`download_plot-description`)
+  #   # print(input$`download_plot-license`)
+  #   # print(input$`download_plot-tags`)
+  #   # print(input$`download_plot-category`)
+  # })
+  
+  callModule(downloadTable, "download_plot", table = reactive(palette_table()$data), name = "table",
+             formats = c("link", "csv", "xlsx"), modalFunction = saveFringeUrl, 
+             element = reactive(palette_table()), user_id = user_id, user_name = user_name, 
+             fringe_name = reactive(input$`download_plot-link-name`),
+             # slug = input$`download_plot-slug`,
+             description = input$`download_plot-description`, license = input$`download_plot-license`,
+             tags = input$`download_plot-tags`, category = input$`download_plot-category`)
+  
+  
 }
 
 shinyApp(ui, server)
