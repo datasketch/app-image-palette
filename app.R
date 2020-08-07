@@ -23,6 +23,44 @@ if(Sys.info()[['sysname']] == 'Linux'){
   system('fc-match IBM Plex Sans')
 }
 
+user_name <- "brandon"
+user_id <- "5efa17497caa2b00156a6468"
+
+pin.fringe <- function(f, name = NULL, description = NULL, board = NULL, ...) {
+  path <- tempfile()
+  dir.create(path)
+  on.exit(unlink(path, recursive = TRUE))
+  saveRDS(f, file.path(path, "data.rds"), version = 2)
+  
+  fringe_write(f, path = path, overwrite_dic = TRUE)
+  metadata <- f$meta
+  metadata$title <- f$name
+  metadata$stats <- f$stats
+  
+  args <- list(...)
+  if(!is.null(args$user_id)){
+    board <- board_name(args$user_id)
+  }
+  
+  assign("board", board, envir = globalenv())
+  assign("path", path, envir = globalenv())
+  assign("f", f, envir = globalenv())
+  assign("metadata", metadata, envir = globalenv())
+  #upload_url <- paste0("https://s3.amazonaws.com/",board_name(user_id),"/some-file")
+  upload_url <- tryCatch(board_pin_store(board, path, f$slug, f$description, "fringe",
+                                         extract = FALSE,
+                                         metadata,...),
+                         error = function(e){
+                           upload_url
+                         },
+                         finally = {
+                           # message("Fringe uploaded to: ", upload_url)
+                         })
+  upload_url
+}
+
+
+
 ui <-   panelsPage(
   panel(
     title = "Image Upload", 
@@ -162,7 +200,7 @@ server <- function(input, output, session) {
       element <- fringe(element)
     }
     f <- modifyList(element, args)
-    assign("f0", f, envir = globalenv())
+    Sys.setlocale(locale = "en_US.UTF-8")
     dspins_user_board_connect(user_id)
     message("\n\nSAVING PIN\n\n")
     pin_url <- pin(f, user_id = user_id)
