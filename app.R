@@ -191,9 +191,17 @@ server <- function(input, output, session) {
   # })
   # 
   saveFringeUrl <- function(element, user_id, user_name, fringe_name, ...) {
+    
     if (is.reactive(fringe_name)) fringe_name <- fringe_name()
     if (is.reactive(element)) element <- element()
-    args <- list(...)
+    args <- lapply(list(...), function(s) {
+      if (is.reactive(s)) {
+        s()
+      } else {
+        s
+      }
+    })
+    assign("l0", args, envir = globalenv())
     args$name <- fringe_name
     args$slug <- fringe_name
     if (!is_fringe(element)) {
@@ -241,10 +249,10 @@ server <- function(input, output, session) {
   callModule(downloadTable, "download_plot", table = reactive(palette_table()$data), name = "table",
              formats = c("link", "csv", "xlsx"), modalFunction = saveFringeUrl, 
              element = reactive(palette_table()), user_id = user_id, user_name = user_name, 
-             fringe_name = reactive(input$`download_plot-link-name`))
-             # slug = input$`download_plot-slug`,
-             # description = input$`download_plot-description`, license = input$`download_plot-license`,
-             # tags = input$`download_plot-tags`, category = input$`download_plot-category`)
+             fringe_name = reactive(input$`download_plot-link-name`),
+             slug = input$`download_plot-slug`,
+             description = input$`download_plot-description`, license = input$`download_plot-license`,
+             tags = input$`download_plot-tags`, category = input$`download_plot-category`)
   
   
 }
